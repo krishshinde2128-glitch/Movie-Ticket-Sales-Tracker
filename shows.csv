@@ -1,0 +1,6 @@
+show_id,movie_name,time,screen_no,total_seats,price
+101,Interstellar,10:00 AM,Screen 1,50,250
+102,Inception,01:00 PM,Screen 2,40,300
+103,The Dark Knight,04:00 PM,Screen 1,50,280
+104,Avengers: Endgame,07:00 PM,Screen 3,60,350
+105,Spider-Man: No Way Home,09:00 PM,Screen 2,40,320
