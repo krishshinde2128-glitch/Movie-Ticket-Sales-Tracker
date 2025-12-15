@@ -3,7 +3,6 @@ from show_class import Show
 from ticket_class import Ticket
 import sales_utils
 
-
 shows_list = Show.load_shows('shows.csv')
 
 def get_booked_seats_count(show_id):
