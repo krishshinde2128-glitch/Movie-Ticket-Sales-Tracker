@@ -7,25 +7,19 @@ class Show:
         self.movie_name = movie_name
         self.time = time
         self.screen_no = screen_no
-        # Convert numeric values from strings to integers for math later
         self.total_seats = int(total_seats) 
         self.price = int(price)
 
     def __str__(self):
-        
         return f"[{self.show_id}] {self.movie_name} | Time: {self.time} | Total Seats: {self.total_seats} | Price: {self.price}"
 
     @staticmethod
-    def load_shows(filename):
-        
+    def load_shows(file):
         all_shows = [] 
-        
         try:
-            with open(filename, mode='r') as file:
-                reader = csv.DictReader(file) # Reads rows as dictionaries
-                
+            with open(file, mode='r') as file:
+                reader = csv.DictReader(file) 
                 for row in reader:
-                    # Create a Show object for each row in the CSV
                     new_show = Show(
                         row['show_id'], 
                         row['movie_name'], 
@@ -34,10 +28,8 @@ class Show:
                         row['total_seats'], 
                         row['price']
                     )
-                    all_shows.append(new_show)
-                    
+                    all_shows.append(new_show)       
         except FileNotFoundError:
-            print(f"Error: The file {filename} was not found.")
-            
+            print(f"Error: The file {file} was not found.")  
         return all_shows
 

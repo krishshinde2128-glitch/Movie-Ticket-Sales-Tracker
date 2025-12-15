@@ -1,40 +1,64 @@
-import csv  # We use the built-in CSV module instead of Pandas
+import csv
 from show_class import Show
 from ticket_class import Ticket
 import sales_utils
 
-# --- 1. Load Data ---
+
 shows_list = Show.load_shows('shows.csv')
 
+def get_booked_seats_count(show_id):
+    count = 0
+    try:
+        with open('sales.csv', mode='r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['show_id'] == show_id and row['status'] == 'Booked':
+                    count += int(row['seats_booked'])
+    except FileNotFoundError:
+        return 0 
+    return count
+
 def view_shows():
-    print("\n--- Available Shows ---")
-    # REQUIREMENT: "List comprehensions for show filtering"
-    display_lines = [str(s) for s in shows_list]
-    for line in display_lines:
-        print(line)
+    print("\n") 
+    print(f"{'ID':<6} {'Movie Name':<25} {'Time':<10} {'Seats':<10} {'Price':<6}")
+    
+    for s in shows_list:
+        taken = get_booked_seats_count(s.show_id)
+        available = s.total_seats - taken
+        print(f"{s.show_id:<6} {s.movie_name:<25} {s.time:<10} {available}/{s.total_seats:<9} {s.price:<6}")
+    print()
 
 @sales_utils.log_event
 def book_ticket():
     view_shows()
     try:
         s_id = input("\nEnter Show ID to book: ")
-        seats = int(input("Enter number of seats: "))
-        
+
         selected_show = None
         for s in shows_list:
             if s.show_id == s_id:
                 selected_show = s
                 break
-        
         if selected_show:
-            # REQUIREMENT: "Lambda to calculate revenue instantly"
+            taken = get_booked_seats_count(s_id)
+            available = selected_show.total_seats - taken
+
+            if available == 0:
+                print("Sorry! This show is SOLD OUT.")
+                return
+            seats = int(input(f"Enter number of seats (Max {available}): "))
+            
+            if seats > available:
+                print(f"Error: Only {available} seats are available.")
+                return
+    
             calc_cost = lambda price, count: price * count
             total_cost = calc_cost(selected_show.price, seats)
             
-            txn_id = sales_utils.generate_transaction_id()
-            new_ticket = Ticket(txn_id, s_id, seats, total_cost)
+            TIC_id = sales_utils.generate_transaction_id()
+            new_ticket = Ticket(TIC_id, s_id, seats, total_cost)
             
-            sales_utils.save_transaction(txn_id, s_id, seats, total_cost)
+            sales_utils.save_transaction(TIC_id, s_id, seats, total_cost)
             
             print(f"\nSUCCESS! Ticket Booked.")
             print(new_ticket)
@@ -42,63 +66,48 @@ def book_ticket():
             print("Error: Show ID not found.")
             
     except ValueError:
-        print("Error: Please enter valid numbers for seats.")
+        print("Error: Please enter valid numbers.")
 
 @sales_utils.log_event
 def cancel_ticket():
-    txn_id = input("\nEnter Transaction ID to cancel: ")
-    success = sales_utils.update_transaction_status(txn_id, "Cancelled")
-    
+    TIC_id = input("\nEnter Transaction ID to cancel (without the #): ")
+    success = sales_utils.update_transaction_status(TIC_id, "Cancelled")
     if success:
         print("Success: Ticket has been cancelled.")
     else:
         print("Error: Transaction ID not found.")
 
 def analyze_data():
-    """
-    Analyzes sales using standard Python (No Pandas/Matplotlib).
-    """
-    print("\n--- SALES REPORT ---")
-    
+    print("\n SALES REPORT ")
     total_revenue = 0.0
-    revenue_by_show = {} # Dictionary to store revenue per show
+    revenue_by_show = {} 
     
     try:
         with open('sales.csv', mode='r') as file:
             reader = csv.DictReader(file)
-            
             for row in reader:
-                # Only count active bookings
                 if row['status'] == 'Booked':
                     amount = float(row['total_amount'])
                     s_id = row['show_id']
-                    
-                    # 1. Add to total global revenue
                     total_revenue += amount
-                    
-                    # 2. Add to specific show revenue
                     if s_id in revenue_by_show:
                         revenue_by_show[s_id] += amount
                     else:
                         revenue_by_show[s_id] = amount
         
-        # --- Print the Text Report ---
         print(f"TOTAL REVENUE COLLECTED: ${total_revenue}")
-        print("\n--- Revenue Breakdown by Show ---")
-        
+        print("\n Revenue Breakdown by Show ID:")
         if not revenue_by_show:
             print("No sales data available yet.")
         else:
             for s_id, revenue in revenue_by_show.items():
-                print(f"Show ID {s_id}: ${revenue}")
-                
+                print(f"Show ID {s_id}: ${revenue}\n")           
     except FileNotFoundError:
-        print("Error: No sales data found (sales.csv missing).")
+        print("Error: No sales data found.")
 
-# --- Main Menu Loop ---
 def main():
     while True:
-        print("\n=== MOVIE TICKET SYSTEM ===")
+        print("MOVIE TICKET SYSTEM ")
         print("1. View Shows")
         print("2. Book Ticket")
         print("3. Cancel Ticket")
