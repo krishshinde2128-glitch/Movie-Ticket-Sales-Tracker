@@ -47,6 +47,10 @@ def book_ticket():
                 return
             seats = int(input(f"Enter number of seats (Max {available}): "))
             
+            if seats <= 0:
+                print("Error: Number of seats must be positive.")
+                return
+            
             if seats > available:
                 print(f"Error: Only {available} seats are available.")
                 return
