@@ -1,5 +1,6 @@
 import csv
 import datetime
+import matplotlib.pyplot as plt 
 
 def log_event(func):
     def log(*args, **kwargs):
@@ -33,3 +34,42 @@ def update_transaction_status(transaction_id, new_status):
             writer.writerows(rows)
         return True
     return False
+
+def plot_revenue_graph():
+    revenue_by_show = {}
+    try:
+        with open('sales.csv', mode='r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['status'] == 'Booked':
+                    s_id = row['show_id']
+                    amount = float(row['total_amount'])
+                    
+                    if s_id in revenue_by_show:
+                        revenue_by_show[s_id] += amount
+                    else:
+                        revenue_by_show[s_id] = amount
+    except FileNotFoundError:
+        print("No data to plot.")
+        return
+
+    if not revenue_by_show:
+        print("No sales found to plot.")
+        return
+
+    shows = list(revenue_by_show.keys())      
+    earnings = list(revenue_by_show.values()) 
+
+    plt.figure(figsize=(8, 5)) 
+    
+    plt.bar(shows, earnings, color='skyblue', width=0.5)
+
+    plt.xlabel('Show ID')
+    plt.ylabel('Revenue ($)')
+    plt.title('Total Revenue per Movie')
+    
+    for i in range(len(shows)):
+        plt.text(i, earnings[i], f"${earnings[i]}", ha='center', va='bottom')
+
+    print("Opening graph window...")
+    plt.show()

@@ -2,7 +2,7 @@ import csv
 from show_class import Show
 from ticket_class import Ticket
 import sales_utils
-
+# import matplotlib.pyplot as plt  <-- REMOVED (Not needed here if plotting is in sales_utils)
 
 shows_list = Show.load_shows('shows.csv')
 
@@ -111,13 +111,14 @@ def analyze_data():
 
 def main():
     while True:
-        print("MOVIE TICKET SYSTEM ")
+        print("\n--- MOVIE TICKET SYSTEM ---")
         print("1. View Shows")
         print("2. Book Ticket")
         print("3. Cancel Ticket")
-        print("4. Analyze Data (Report)")
-        print("5. Exit")
-        
+        print("4. Analyze Data (Text Report)")
+        print("5. View Revenue Graph (New!)")
+        print("6. Exit")
+
         choice = input("Enter choice: ")
         
         if choice == '1':
@@ -129,6 +130,8 @@ def main():
         elif choice == '4':
             analyze_data()
         elif choice == '5':
+            sales_utils.plot_revenue_graph()
+        elif choice == '6':
             print("Goodbye!")
             break
         else:
